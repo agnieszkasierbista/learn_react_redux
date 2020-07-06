@@ -1,12 +1,34 @@
-import {combineReducers, createStore} from "redux";
+import {applyMiddleware, combineReducers, compose, createStore} from "redux";
 import {reducer as formReducer} from 'redux-form'
-
+import {createEpicMiddleware, ofType} from 'redux-observable';
+import {catchError, mapTo, map, switchMap, tap} from "rxjs/operators";
+import axios from "axios";
+import {of, from} from "rxjs";
 
 const SET_FIELD_VALUE = "SET_FIELD_VALUE";
-const LOG_IN = "LOG_IN";
+
+export const LOG_IN = "LOG_IN";
+export const LOG_IN_SUCCESS = "LOG_IN_SUCCESS";
+export const LOG_IN_FAILURE= "LOG_IN_FAILURE";
 
 const preloadedLoginState = {isLoggedIn: false};
 
+const epicMiddleware = createEpicMiddleware();
+
+const rootEpic = action$ => action$.pipe(
+    ofType(LOG_IN),
+    switchMap((action) => {
+
+        const { user, pass } = action.payload;
+
+        return from(axios.post('http://localhost:3001/log-in', {user, pass})).pipe(
+            map(() => ({type: LOG_IN_SUCCESS })),
+            catchError(() => {
+                return of({ type: LOG_IN_FAILURE });
+            })
+        )
+    })
+);
 
 const combinedReducers = combineReducers({
     form: formReducer,
@@ -19,10 +41,16 @@ const combinedReducers = combineReducers({
                     ...action.payload
                 }
             },
-            [LOG_IN]: function () {
+            [LOG_IN_SUCCESS]: function () {
                 return {
                     ...state,
-                    isLoggedIn: action.payload
+                    isLoggedIn: true
+                }
+            },
+            [LOG_IN_FAILURE]: function () {
+                return {
+                    ...state,
+                    isLoggedIn: false
                 }
             }
         };
@@ -33,8 +61,15 @@ const combinedReducers = combineReducers({
 
 export const store = createStore(
     combinedReducers,
-    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+    compose(
+        applyMiddleware(
+            epicMiddleware
+        ),
+        window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+    )
 );
+
+epicMiddleware.run(rootEpic);
 
 export function setFieldValue(fieldName, value) {
     return {
@@ -43,10 +78,10 @@ export function setFieldValue(fieldName, value) {
     }
 }
 
-export function logIn(isLoggedIn) {
+export function logIn(user, pass) {
     return {
         type: LOG_IN,
-        payload: isLoggedIn
+        payload: { user, pass }
     }
 
 }

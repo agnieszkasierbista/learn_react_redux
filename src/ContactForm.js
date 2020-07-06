@@ -31,7 +31,7 @@ export default reduxForm({
         return true;
     },
     validate: function (formData) {
-        if (formData.address === 'dupa') {
+        if (formData.address === '----') {
             return {
                 address: 'wrong address!'
             }

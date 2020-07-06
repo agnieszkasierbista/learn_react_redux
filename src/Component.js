@@ -1,6 +1,6 @@
 import {connect} from "react-redux";
 import Component from "./Component.layout";
-import {logIn} from "./store";
+import {LOG_IN, logIn} from "./store";
 import axios from "axios";
 import {reduxForm} from "redux-form";
 
@@ -16,18 +16,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         dispatchLogIn: function (user, pass) {
-            console.log("user", user);
-            axios
-                .post('http://localhost:3001/log-in', {user, pass})
-                .then(function () {
-                        dispatch(logIn(true))
-                    }
-                )
-                .catch(() => {
-                    dispatch(logIn(false))
-                })
-
-
+            dispatch(logIn(user, pass));
         }
     }
 }
