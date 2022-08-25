@@ -26,7 +26,6 @@ function withBaloons(Component) {
 export default reduxForm({
 
     shouldValidate: function (params) {
-        // console.log('params', params);
 
         return true;
     },

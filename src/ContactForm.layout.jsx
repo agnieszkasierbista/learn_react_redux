@@ -3,8 +3,6 @@ import React from "react";
 
 const Input = (props) => {
 
-    console.log('input', props);
-
     return (
         <div>
             <input
@@ -20,13 +18,8 @@ function sf(values) {
 }
 
 export const ContactForm = function (props) {
-    console.log('propz', props);
-
-    // alert(props.baloons);
 
     const {handleSubmit} = props;
-
-    console.log('sfd', handleSubmit);
 
     return (
         <Form onSubmit={handleSubmit(sf)}>
